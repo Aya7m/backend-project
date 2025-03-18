@@ -8,10 +8,11 @@ import cartRouter from './routers/cart.route.js'
 import coupenRouter from './routers/coupen.routes.js'
 import paymentRoute from './routers/payment.route.js'
 import analysisRouter from './routers/analytics.route.js'
+import cors from 'cors'
 
 
 
-
+app.use(cors());
 
 
 const app = express()
