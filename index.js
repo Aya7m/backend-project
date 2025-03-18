@@ -12,10 +12,27 @@ import cors from 'cors'
 
 
 
-app.use(cors());
+
 
 
 const app = express()
+
+
+// السماح فقط للفرونت المحلي والمستضاف على Vercel
+const allowedOrigins = ["http://localhost:5173", "https://yourfrontend.vercel.app"];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("CORS not allowed"));
+    }
+  },
+  methods: "GET,POST,PUT,DELETE,OPTIONS",
+  allowedHeaders: "Content-Type,Authorization"
+}));
+
 
 dotenv.config()
 const port = process.env.PORT || 5000
@@ -30,6 +47,8 @@ app.use('/cart',cartRouter)
 app.use('/coupon',coupenRouter)
 app.use('/payment',paymentRoute)
 app.use('/analysis',analysisRouter)
+app.options('*', cors()); // السماح لجميع طلبات OPTIONS
+
 
 connectDB()
 
