@@ -48,7 +48,7 @@ export const signUp = async (req, res) => {
         });
     
         if (NewUser) {
-            generateTokenAndSetCookie(NewUser._id, res)
+            generateTokenAndSetCookie(NewUser._id, NewUser.role, res)
             await NewUser.save()
             return res.status(201).json({
                 _id: NewUser._id,
@@ -105,7 +105,7 @@ export const signIn = async (req, res) => {
     }
 
     // create token
-    generateTokenAndSetCookie(emailExist._id, res)
+    generateTokenAndSetCookie(emailExist._id,emailExist.role, res)
 
     return res.status(200).json({
         _id: emailExist._id,
