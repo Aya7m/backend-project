@@ -50,7 +50,7 @@ export const signUp = async (req, res) => {
         const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "15d" });
 
 
-        return res.status(200).json({ success: true, data: user,token, message: "User created successfully" });
+        return res.status(200).json({ success: true, data: user, token, message: "User created successfully" });
     } catch (error) {
         console.log("Error in signUp controller", error.message);
         res.status(500).json({ message: "Server error", error: error.message });
@@ -87,7 +87,7 @@ export const signIn = async (req, res) => {
         return res.status(400).json({ error: 'Password not match' });
     }
 
-    const token= jwt.sign({ userId: emailExist._id }, process.env.JWT_SECRET, { expiresIn: "15d" });
+    const token = jwt.sign({ userId: emailExist._id }, process.env.JWT_SECRET, { expiresIn: "15d" });
 
     res.status(200).json({ success: true, token })
 
@@ -96,8 +96,8 @@ export const signIn = async (req, res) => {
 
 export const logout = async (req, res) => {
     try {
-       const{_id}=req.user;
-       await User.findByIdAndUpdate({_id},{token:""});
+        const { _id } = req.user;
+        await User.findByIdAndUpdate({ _id }, { token: "" });
         res.json({ message: "Logout successfully" });
     } catch (error) {
         res.status(500).json({ message: "Server error", error: error.message });
@@ -105,10 +105,20 @@ export const logout = async (req, res) => {
 }
 
 
-export const getProfile = async (req, res) => {
+export const getUser = async (req, res) => {
     try {
-        res.json(req.user);
+        const userId = req.user._id;
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.json(user);
+
+
+       
     } catch (error) {
         res.status(500).json({ message: "Server error", error: error.message });
     }
-};
+}

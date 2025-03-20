@@ -17,44 +17,31 @@ export const adminRoute = (req, res, next) => {
 	}
 };
 
-export const protectRoute = () => {
+
+
+
+export const protectRoute = async (req, res, next) => {
 	try {
+		const { token } = req.headers;
+        console.log("🔑 Token received:", token);
 
-		return async (req, res, next) => {
-		  const { token } = req.headers;
-	
-		  if (!token) {
-			return res.status(401).json({ error: "Unauthorized please login" })
-		  }
-	
-		  if (!token.startsWith("demarric")) {
-			return res.status(401).json({ error: "Unauthorized,invalid token" })
-	
-		  }
-		  const originalToken = token.split(" ")[1];
-		  const decoadData = jwt.verify(originalToken, "demarric")
-		  if (!decoadData.userId) {
-			return res.status(401).json({ error: "Unauthorized,invalid token" })
-		  }
-	
-		  // find userId
-		  const user = await User.findById(decoadData.userId).select("-password")
-	
-	
-		  if (!user) {
-			return res.status(401).json({ error: "please sign up first and try again" })
-	
-		  }
-	
-	
-	
-		  req.authuser = user
-		  next()
-	
-		}
-	} catch (error) {
-		console.log(error)
-	}
-};
+        if (!token) {
+            return res.status(401).json({ message: "Unauthorized - No token" });
+        }
 
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        console.log("📜 Decoded token:", decoded);
 
+        const user = await User.findById(decoded.userId).select("-password");
+        console.log("👤 User found:", user);
+
+        if (!user) {
+            return res.status(401).json({ message: "Unauthorized - User not found" });
+        }
+
+        req.user = user;
+        next();
+    } catch (error) {
+        return res.status(401).json({ message: "Unauthorized - Invalid token" });
+    }
+}
