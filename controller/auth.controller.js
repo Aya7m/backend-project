@@ -1,4 +1,4 @@
-import { generateTokenAndSetCookie } from "../lib/utilites/generiteToken.js";
+import jwt from "jsonwebtoken";
 import User from "../model/user.model.js";
 import bcrypt from "bcryptjs"
 
@@ -12,6 +12,7 @@ export const signUp = async (req, res) => {
                 message: "All fields are required"
             });
         }
+
 
         // التحقق من صحة البريد الإلكتروني
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -30,32 +31,26 @@ export const signUp = async (req, res) => {
             return res.status(400).json({ error: "Password must be at least 6 characters" });
         }
 
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ error: "User already exists" });
+        }
+
         // تشفير كلمة المرور
         const salt = await bcrypt.genSalt(10);
         const hashPassword = await bcrypt.hash(password, salt);
 
-        // تحديد الدور بناءً على الإيميل
-        const role = email === "yyoyo6987@gmail.com" ? "admin" : "user";
-
-        // إنشاء المستخدم
-        const NewUser = await User.create({
+        // انشاء المستخدم
+        const user = await User.create({
             name,
             email,
             password: hashPassword,
-            role
         });
 
-        if (NewUser) {
-            generateTokenAndSetCookie(NewUser._id, NewUser.role, res);
-            return res.status(201).json({
-                _id: NewUser._id,
-                name: NewUser.name,
-                email: NewUser.email,
-                role: NewUser.role
-            });
-        } else {
-            return res.status(400).json({ error: "User not created" });
-        }
+        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "15d" });
+
+
+        return res.status(200).json({ success: true, data: user,token, message: "User created successfully" });
     } catch (error) {
         console.log("Error in signUp controller", error.message);
         res.status(500).json({ message: "Server error", error: error.message });
@@ -92,30 +87,28 @@ export const signIn = async (req, res) => {
         return res.status(400).json({ error: 'Password not match' });
     }
 
-    // create token
-    generateTokenAndSetCookie(emailExist._id,emailExist.role, res)
+    const token= jwt.sign({ userId: emailExist._id }, process.env.JWT_SECRET, { expiresIn: "15d" });
 
-    return res.status(200).json({
-        _id: emailExist._id,
-        name: emailExist.name,
-        email: emailExist.email,
-        role: emailExist.role
-    });
-
+    res.status(200).json({ success: true, token })
 
 }
 
 
 export const logout = async (req, res) => {
-    res.clearCookie("jwt", { httpOnly: true, secure: true, sameSite: "strict" });
-    res.status(200).json({ message: "Logout successfully" });
+    try {
+       const{_id}=req.user;
+       await User.findByIdAndUpdate({_id},{token:""});
+        res.json({ message: "Logout successfully" });
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
 }
 
 
 export const getProfile = async (req, res) => {
-	try {
-		res.json(req.user);
-	} catch (error) {
-		res.status(500).json({ message: "Server error", error: error.message });
-	}
+    try {
+        res.json(req.user);
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
 };

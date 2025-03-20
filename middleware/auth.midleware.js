@@ -7,33 +7,53 @@ import User from "../model/user.model.js";
 
 
 export const adminRoute = (req, res, next) => {
-	if (req.user && req.user.role === "admin") {
-		next();
-	} else {
-		return res.status(403).json({ message: "Access denied - Admin only" });
+	try {
+		if (req.user.role !== "admin") {
+			return res.status(401).json({ error: "Unauthorized,You are not admin" })
+		}
+		next()
+	} catch (error) {
+		console.log(error)
 	}
 };
 
-export const protectRoute = async (req, res, next) => {
+export const protectRoute = () => {
 	try {
-		const token = req.cookies.jwt;
 
-		if (!token) {
-			return res.status(401).json({ message: "Unauthorized - No token" });
+		return async (req, res, next) => {
+		  const { token } = req.headers;
+	
+		  if (!token) {
+			return res.status(401).json({ error: "Unauthorized please login" })
+		  }
+	
+		  if (!token.startsWith("demarric")) {
+			return res.status(401).json({ error: "Unauthorized,invalid token" })
+	
+		  }
+		  const originalToken = token.split(" ")[1];
+		  const decoadData = jwt.verify(originalToken, "demarric")
+		  if (!decoadData.userId) {
+			return res.status(401).json({ error: "Unauthorized,invalid token" })
+		  }
+	
+		  // find userId
+		  const user = await User.findById(decoadData.userId).select("-password")
+	
+	
+		  if (!user) {
+			return res.status(401).json({ error: "please sign up first and try again" })
+	
+		  }
+	
+	
+	
+		  req.authuser = user
+		  next()
+	
 		}
-
-		const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-		const user = await User.findById(decoded.userId);
-
-		if (!user) {
-			return res.status(401).json({ message: "Unauthorized - User not found" });
-		}
-
-		req.user = user;
-		next();
 	} catch (error) {
-		return res.status(401).json({ message: "Unauthorized - Invalid token" });
+		console.log(error)
 	}
 };
 
