@@ -1,3 +1,4 @@
+import cloudinary from "../lib/cloudinary.js";
 import Product from "../model/product.model.js";
 
 export const getAllProducts = async (req, res) => {
