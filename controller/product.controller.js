@@ -49,6 +49,10 @@ export const createProduct = async (req, res) => {
     try {
         const { name, description, price, image, category } = req.body;
 
+        
+
+
+
         let cloudinaryResponse = null;
 
         if (image) {
