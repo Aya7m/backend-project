@@ -1,33 +1,38 @@
 import Product from "../model/product.model.js";
 
 export const addToCart = async (req, res) => {
-    try {
+	try {
         const { productId } = req.body; 
         const user = req.user; 
 
-        // ✅ التحقق من أن `productId` ليس فارغًا
+        // ✅ تحقق من وجود `productId`
         if (!productId) {
             return res.status(400).json({ error: "Product ID is required" });
         }
 
-        // ✅ التحقق مما إذا كان المنتج موجودًا في قاعدة البيانات
+        // ✅ جلب المنتج من قاعدة البيانات
         const product = await Product.findById(productId);
         if (!product) {
             return res.status(404).json({ error: "Product not found" });
         }
 
-        // ✅ تأكد أن `cartItems` موجود وأنه مصفوفة
-        if (!Array.isArray(user.cartItems)) {
+        // ✅ تأكد أن `cartItems` موجودة وأنها مصفوفة
+        if (!user.cartItems || !Array.isArray(user.cartItems)) {
             user.cartItems = [];
         }
 
-        // ✅ التحقق مما إذا كان المنتج موجودًا بالفعل في `cartItems`
-        const existingItem = user.cartItems.find((item) => item.product?.toString() === productId);
+        console.log("User cart items before adding:", user.cartItems);
+
+        // ✅ تصفية `null` أو `undefined` من `cartItems` لتجنب الأخطاء
+        user.cartItems = user.cartItems.filter(item => item && item.product);
+
+        // ✅ البحث عن المنتج في `cartItems` مع التأكد من أنه ليس `null`
+        const existingItem = user.cartItems.find((item) => item.product.toString() === productId);
         
         if (existingItem) {
             existingItem.quantity += 1;
         } else {
-            user.cartItems.push({ product: product._id, quantity: 1 }); // ✅ إضافة المنتج ككائن
+            user.cartItems.push({ product: product._id, quantity: 1 }); // ✅ إضافة المنتج ككائن وليس فقط ID
         }
 
         await user.save();
