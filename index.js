@@ -20,7 +20,7 @@ const app = express()
 
 
 app.use(cors({
-    origin: ["http://localhost:5173", "https://your-frontend.vercel.app"], // السماح بالطلبات من localhost وأيضًا من الدومين المباشر
+    origin: ["http://localhost:5173", "https://backend-project-two-phi.vercel.app"], // السماح بالطلبات من localhost وأيضًا من الدومين المباشر
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true // السماح بإرسال الكوكيز والتوكنز
 }))
