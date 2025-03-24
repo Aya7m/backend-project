@@ -50,17 +50,25 @@ export const removeAllFromCart = async (req, res) => {
 	try {
 		const { productId } = req.body;
 		const user = req.user;
+
 		if (!productId) {
+			// إذا لم يُرسل `productId`، يتم مسح السلة بالكامل
 			user.cartItems = [];
 		} else {
-			user.cartItems = user.cartItems.filter((item) => item.id !== productId);
+			// حذف المنتج المحدد من السلة
+			user.cartItems = user.cartItems.filter((item) => item.product.toString() !== productId);
 		}
+
 		await user.save();
-		res.json(user.cartItems);
+		res.json({ message: "Cart updated", cartItems: user.cartItems });
 	} catch (error) {
+		console.error("Error in removeAllFromCart controller:", error.message);
 		res.status(500).json({ message: "Server error", error: error.message });
 	}
 };
+
+
+
 
 
 
