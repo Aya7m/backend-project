@@ -78,26 +78,29 @@ export const updateQuantity = async (req, res) => {
 		const { id: productId } = req.params;
 		const { quantity } = req.body;
 		const user = req.user;
-		const existingItem = user.cartItems.find((item) => item.id === productId);
 
-		if (existingItem) {
-			if (quantity === 0) {
-				user.cartItems = user.cartItems.filter((item) => item.id !== productId);
-				await user.save();
-				return res.json(user.cartItems);
-			}
+		// البحث عن المنتج داخل `cartItems`
+		const existingItem = user.cartItems.find((item) => item.product.toString() === productId);
 
-			existingItem.quantity = quantity;
-			await user.save();
-			res.json(user.cartItems);
-		} else {
-			res.status(404).json({ message: "Product not found" });
+		if (!existingItem) {
+			return res.status(404).json({ message: "Product not found in cart" });
 		}
+
+		// إذا كانت الكمية 0، نحذف العنصر من السلة
+		if (quantity === 0) {
+			user.cartItems = user.cartItems.filter((item) => item.product.toString() !== productId);
+		} else {
+			existingItem.quantity = quantity;
+		}
+
+		await user.save();
+		res.json({ message: "Cart updated", cartItems: user.cartItems });
 	} catch (error) {
-		console.log("Error in updateQuantity controller", error.message);
+		console.error("Error in updateQuantity controller:", error.message);
 		res.status(500).json({ message: "Server error", error: error.message });
 	}
 };
+
 
 
 
