@@ -20,7 +20,7 @@ const app = express()
 
 
 app.use(cors({
-    origin: "https://backend-project-b6a9.vercel.app",
+    origin: ["https://backend-project-b6a9.vercel.app", "http://localhost:5173"],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true // السماح بإرسال الكوكيز والتوكنز
 }))
