@@ -20,10 +20,11 @@ const app = express()
 
 
 app.use(cors({
-    origin: ["https://backend-project-b6a9.vercel.app", "http://localhost:5173"],
+    origin: "*", // السماح بأي دومين أثناء الاختبار
     methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true // السماح بإرسال الكوكيز والتوكنز
-}))
+    credentials: true
+}));
+
 
 
 dotenv.config()
@@ -39,14 +40,7 @@ app.use('/cart', cartRouter)
 app.use('/coupon', coupenRouter)
 app.use('/payment', paymentRoute)
 app.use('/analysis', analysisRouter)
-app.options('*', cors()); // السماح لجميع طلبات OPTIONS
 
-app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "http://localhost:5173");
-    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    next();
-});
 
 
 
