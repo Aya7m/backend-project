@@ -135,3 +135,34 @@ export const getAllOrders = async (req, res) => {
         res.status(500).json({ message: "Server error", error: error.message });
     }
 }
+
+export const createOrder = async (req, res) => {
+    try {
+        console.log("📌 Creating order for user:", req.user._id);
+        console.log("🛒 Request Body:", req.body);
+
+        const { products, totalAmount } = req.body;
+
+        // ✅ التحقق من صحة البيانات
+        if (!products || products.length === 0) {
+            return res.status(400).json({ error: "لا يوجد منتجات في الطلب" });
+        }
+
+        // ✅ إنشاء الطلب
+        const newOrder = new Order({
+            user: req.user._id,
+            products,
+            totalAmount,
+            status: "pending", // الحالة الافتراضية للطلب
+        });
+
+        // ✅ حفظ الطلب في قاعدة البيانات
+        const savedOrder = await newOrder.save();
+        console.log("✅ Order Saved:", savedOrder);
+
+        res.status(201).json(savedOrder);
+    } catch (error) {
+        console.error("❌ Error creating order:", error);
+        res.status(500).json({ error: "حدث خطأ في السيرفر" });
+    }
+};

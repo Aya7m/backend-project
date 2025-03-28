@@ -89,7 +89,7 @@ export const signIn = async (req, res) => {
 
     const token = jwt.sign({ userId: emailExist._id }, process.env.JWT_SECRET, { expiresIn: "15d" });
 
-    res.status(200).json({ success: true,  data: emailExist, token })
+    res.status(200).json({ success: true, data: emailExist, token })
 
 }
 
@@ -117,7 +117,45 @@ export const getUser = async (req, res) => {
         res.json(user);
 
 
-       
+
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+}
+
+// change password
+export const changePassword = async (req, res) => {
+    try {
+        const { oldPassword, newPassword } = req.body;
+
+        if (!oldPassword || !newPassword) {
+            return res.status(400).json({
+                success: false,
+                message: "All fields are required"
+            });
+        }
+
+        // التحقق من صحة كلمة المرور القديمة
+        const user = await User.findById(req.user._id);
+        const isMatch = await bcrypt.compare(oldPassword, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ error: "Old password is incorrect" });
+        }
+
+        // التحقق من طول كلمة المرور الجديدة
+        if (newPassword.length < 6) {
+            return res.status(400).json({ error: "New password must be at least 6 characters" });
+        }
+
+        // تشفير كلمة المرور الجديدة
+        const salt = await bcrypt.genSalt(10);
+        const hashPassword = await bcrypt.hash(newPassword, salt);
+
+        // تحديث كلمة المرور
+        user.password = hashPassword;
+        await user.save();
+
+        res.json({ message: "Password changed successfully" });
     } catch (error) {
         res.status(500).json({ message: "Server error", error: error.message });
     }
