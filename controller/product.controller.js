@@ -142,10 +142,20 @@ export const getProductsByCategory = async (req, res) => {
 // get product by name
 export const getProductByName = async (req, res) => {
     try {
-        const product = await Product.findOne({ name: req.params.name });
-        res.json(product);
+        console.log("🔍 البحث عن المنتج:", req.params.name); // ✅ التحقق من القيمة المستلمة
+
+        const { name } = req.params;
+        const products = await Product.find({
+            name: { $regex: new RegExp(name, "i") }
+        });
+
+        if (products.length === 0) {
+            return res.status(404).json({ message: "No products found" });
+        }
+
+        res.json(products);
     } catch (error) {
-        console.log("Error in getProductByName controller", error.message);
+        console.error("Error in getProductByName controller:", error.message);
         res.status(500).json({ message: "Server error", error: error.message });
     }
 };
