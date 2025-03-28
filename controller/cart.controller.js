@@ -1,3 +1,4 @@
+import Order from "../model/order.model.js";
 import Product from "../model/product.model.js";
 
 export const addToCart = async (req, res) => {
@@ -120,6 +121,17 @@ export const getCartProducts = async (req, res) => {
         res.json(cartItems);
     } catch (error) {
         console.log("Error in getCartProducts controller", error.message);
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+}
+
+// get all order
+export const getAllOrders = async (req, res) => {
+    try {
+        const orders = await Order.find({ user: req.user._id }).populate("products.product");
+        res.json(orders);
+    } catch (error) {
+        console.log("Error in getAllOrders controller", error.message);
         res.status(500).json({ message: "Server error", error: error.message });
     }
 }
