@@ -9,7 +9,7 @@ authRouter.post('/signin', signIn)
 authRouter.post('/logout', logout)
 authRouter.get('/profile',protectRoute, getUser)
 authRouter.post('/changePassword',protectRoute,changePassword)
-authRouter.post('/changeName',protectRoute,updateName)
+authRouter.put('/changeName',protectRoute,updateName)
 
 
 export default authRouter
