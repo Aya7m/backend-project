@@ -2,13 +2,14 @@ import express from 'express'
 import dotenv from 'dotenv'
 import cookieParser from 'cookie-parser'
 import authRouter from './routers/auth.route.js'
-import connectDB from './db/connectiondb.js'
+
 import productRoute from './routers/product.route.js'
 import cartRouter from './routers/cart.route.js'
 import coupenRouter from './routers/coupen.routes.js'
 import paymentRoute from './routers/payment.route.js'
 import analysisRouter from './routers/analytics.route.js'
 import cors from 'cors'
+import connectDB from './db/connectiondb.js'
 
 
 
